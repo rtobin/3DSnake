@@ -1,0 +1,14 @@
+#instructions {
+  position: absolute;
+}
+
+#reset-button {
+  position: absolute;
+  bottom: 0;
+  margin: 20px;
+  z-index: 200;
+}
+
+.instructions {
+  margin: 20px;
+}

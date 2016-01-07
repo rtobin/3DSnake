@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>three.js css3d - sprites</title>
+		<style>
+			html, body {
+				height: 100%;
+			}
+
+			body {
+				background-color: #ffffff;
+				margin: 0;
+				font-family: Arial;
+				overflow: hidden;
+			}
+
+			a {
+				color: #8888ff;
+			}
+
+			#info {
+				position: absolute;
+				width: 100%;
+				color: #000000;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				font-weight: bold;
+				text-align: center;
+				z-index: 1;
+			}
+		</style>
+	</head>
+	<body>
+    <script src="js/jquery.min.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/CSS3DRenderer.js"></script>
+    <link rel="stylesheet" type="text/css" href="./css/snake.css">
+
+
+
+    <div id="container">
+      <div class="instructions">
+        Use the "left"/"right" arrow keys to turn the snake. <br/>
+        Press "spacebar" to begin and pause/unpause.
+      </div>
+    <button id="reset-button">reset</button>
+    </div>
+
+
+		<script>
+
+			var camera, scene, renderer;
+			var controls;
+
+      var sideLength = 15;
+      var separation = 150;
+			var numSpheres;
+			var positions = [];
+			var spheres = [];
+
+      var timeIter = 0;
+      var turningDir = null, startCamPos, endCamPos, turning = false;
+      var selected, selectedIndex, selectedSide, selectedSpheres = [];
+
+      // switching to steer left/right vs direction arrows...
+      var hoppingVec = new THREE.Vector3( 0,0,0 ),
+          prevHoppingVec = new THREE.Vector3( 0,1,0),
+          paused = true;
+
+      var WIDTH = window.innerWidth;
+  		var HEIGHT = window.innerHeight;
+      var CAMERA_DISTANCE = 2500;
+      var TIME_STEP = 0.25;
+
+      var KEYS = {
+        37: 'left',
+        // 38: 'up',
+        39: 'right',
+        // 40: 'down',
+        32: 'pause'
+      };
+
+      var DIRECTIONS = ['x', 'y', 'z'];
+
+      var UNIT_VECS = {
+        'x': new THREE.Vector3( 1,0,0 ),
+        'y': new THREE.Vector3( 0,1,0 ),
+        'z': new THREE.Vector3( 0,0,1 ),
+        'nx': new THREE.Vector3( -1,0,0 ),
+        'ny': new THREE.Vector3( 0,-1,0 ),
+        'nz': new THREE.Vector3( 0,0,-1 )
+      };
+
+
+      var clock = new THREE.Clock();
+
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
+				scene = new THREE.Scene();
+
+				var image = document.createElement( 'img' );
+				image.addEventListener( 'load', function ( event ) {
+  				var offset = ( ( sideLength - 1 ) * separation ) / 2;
+
+          // Cube
+					for ( var i = 0; i < Math.pow(sideLength, 3) ; i ++ ) {
+            var xi = ( i % sideLength );
+  					var yi = Math.floor( ( i / sideLength ) % sideLength );
+  					var zi = Math.floor( i / ( sideLength * sideLength ) );
+
+  					if (
+  						xi === sideLength - 1 || xi === 0 ||
+  						yi === sideLength - 1 || yi === 0 ||
+  						zi === sideLength - 1 || zi === 0
+  					) {
+
+  						var sphere = new THREE.CSS3DSprite( image.cloneNode() );
+  						sphere.position.x = xi * separation - offset,
+  						sphere.position.y = yi * separation - offset,
+  						sphere.position.z = zi * separation - offset;
+  						sphere.element.style.opacity = "0.3";
+              scene.add( sphere );
+              if ( sphere.position.x === 0 && sphere.position.y === 0 ) {
+                selectedIndex = i;
+                selected = sphere;
+                selectedSpheres.push(sphere);
+                selectedSide = 'z';
+                startCamPos = endCamPos = getEndCameraPosition(selected)
+                camera.position.copy(startCamPos);
+              }
+
+  					} else {
+              sphere = null;
+            }
+  					spheres.push( sphere );
+					}
+
+
+          numSpheres = spheres.length;
+					// transition();
+
+				}, false );
+				image.src = 'images/sprite.png';
+
+        // window.addEventListener('keydown', onKeyDown, false );
+				//
+        $(document).keydown(onKeyDown);
+
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.style.position = 'absolute';
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				// controls = new THREE.TrackballControls( camera, renderer.domElement );
+				// controls.rotateSpeed = 0.5;
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+        $("#reset-button").click(handleReset);
+			}
+
+      function handleReset() {
+        spheres.forEach( function(sphere, i) {
+          if (sphere) {
+            sphere.element.style.opacity = "0.3";
+            if (sphere.position.x === 0 &&
+                sphere.position.y === 0 &&
+                sphere.position.z > 0     ) {
+              selectedIndex = i;
+              selected = sphere;
+              selectedSide = 'z';
+              startCamPos = endCamPos = getEndCameraPosition(selected)
+              camera.position.copy(startCamPos);
+            }
+          }
+        } )
+        hoppingVec = new THREE.Vector3( 0,0,0 );
+        prevHoppingVec = new THREE.Vector3( 0,1,0);
+        paused = true;
+        selectedSpheres = [selected];
+      }
+
+      function getUpCoordinate() {
+        var vec = new THREE.Vector3 ( 0, 1, 0 );
+        var arr = vec.applyQuaternion(camera.quaternion).toArray();
+        var maxIdx = 0,
+            maxValSq = 0,
+            valSq,
+            preString = "";
+        arr.forEach( function(val, idx) {
+          valSq = Math.pow(val, 2);
+          if (valSq > maxValSq) {
+            maxValSq = valSq;
+            maxIdx = idx;
+          }
+        })
+
+        if (arr[maxIdx] < 0) {
+          preString = "n";
+        }
+
+        return preString + DIRECTIONS[maxIdx];
+      }
+
+      function onKeyDown(e) {
+        turningDir = KEYS[e.keyCode];
+        // console.log(turningDir);
+      }
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+      // function getWorldDirArray() {
+      //   var vec = new THREE.Vector3();
+      //   var upVec = UNIT_VECS[getUpCoordinate()];
+      //   var sideNormalVec = UNIT_VECS[selectedSide];
+      //   // debugger
+      //   switch (turningDir) {
+      //     case 'left':
+      //       vec.crossVectors ( sideNormalVec , upVec );
+      //       break
+      //     case 'right':
+      //       vec.crossVectors ( upVec , sideNormalVec );
+      //       break
+      //     case 'up':
+      //       vec.copy(upVec);
+      //       break
+      //     case 'down':
+      //       vec.copy(upVec);
+      //       vec.multiplyScalar(-1);
+      //       break
+      //   }
+      //   // make sure it's a unit direction
+      //   return vec.toArray();
+      // }
+
+      function updateHoppingVec() {
+
+        var sideNormalVec = new THREE.Vector3();
+        sideNormalVec.copy(UNIT_VECS[selectedSide]);
+        switch (turningDir) {
+          case 'left':
+            hoppingVec.crossVectors ( sideNormalVec , hoppingVec );
+            break
+          case 'right':
+            hoppingVec.crossVectors ( hoppingVec , sideNormalVec );
+            break
+          case 'pause':
+            if (paused) {
+              hoppingVec.copy(prevHoppingVec);
+              paused = false;
+            } else {
+              prevHoppingVec.copy(hoppingVec);
+              hoppingVec.multiplyScalar(0);
+              paused = true;
+            }
+            break
+        }
+        turningDir = null;
+      }
+
+      function getNextSphere() {
+        // var arr = getWorldDirArray();
+        updateHoppingVec();
+        var arr = hoppingVec.toArray();
+        var xi = ( selectedIndex % sideLength );
+        var yi = Math.floor( ( selectedIndex / sideLength ) % sideLength );
+        var zi = Math.floor( selectedIndex / ( sideLength * sideLength ) );
+        // debugger
+        if ( xi + arr[0] >= sideLength ) {
+          hoppingVec.copy(UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'x';
+        } else if ( xi + arr[0] < 0 ) {
+          hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'nx';
+        } else if ( yi + arr[1] >= sideLength ) {
+          hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'y';
+        } else if ( yi + arr[1] < 0 ) {
+          hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'ny';
+        } else if ( zi + arr[2] >= sideLength ) {
+          hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'z';
+        } else if ( zi + arr[2] < 0 ) {
+          hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
+          selectedSide = 'nz';
+        }
+
+        arr = hoppingVec.toArray()
+        // only one element of arr is nonzero
+        selectedIndex += arr[0]; // x
+        selectedIndex += arr[1] * sideLength;  // y
+        selectedIndex += arr[2] * sideLength * sideLength;  // z
+        return spheres[ selectedIndex ];
+      }
+
+      function getNextObject() {
+        // sphereIndex = (sphereIndex + 1) % numSpheres;
+        // return spheres[ sphereIndex ];
+      }
+
+      function getEndCameraPosition() {
+        var vec = new THREE.Vector3()
+        vec.copy(selected.position)
+        vec.normalize();
+        return vec.multiplyScalar( CAMERA_DISTANCE );
+      }
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+        if (startCamPos) {
+          timeIter += clock.getDelta();
+    			if ( timeIter > TIME_STEP ) {
+            camera.position.lerpVectors( startCamPos, endCamPos, 1 );
+            timeIter = 0;
+            // selected.element.style.opacity = "0.3";
+            selected = getNextSphere();
+            selected.element.style.opacity = "1";
+            selectedSpheres.push(selected);
+            startCamPos = endCamPos;
+            endCamPos = getEndCameraPosition(selected);
+          } else if (spheres.length > 0) {
+            var alpha = timeIter / TIME_STEP;
+            camera.position.lerpVectors( startCamPos, endCamPos, alpha );
+          }
+
+          var vec = new THREE.Vector3 ( 0, 0, 1 );
+          vec.applyQuaternion(camera.quaternion);
+          // debugger
+          if ( vec.y >= 1 ) {
+            camera.up.set( 0, -1, 0 );
+          } else if ( vec.y <= -1 ) {
+            camera.up.set( 0, 1, 0 );
+          }
+
+          camera.lookAt( new THREE.Vector3(0,0,0) )
+          var time = performance.now();
+
+  				// for ( var i = 0, l = selectedSpheres.length; i < l; i ++ ) {
+          //
+  				// 	var sphere = selectedSpheres[ i ];
+  				// 	var scale = Math.sin( ( Math.floor( sphere.position.x ) + time ) * 0.002 ) * 0.3 + 1;
+  				// 	sphere.scale.set( scale, scale, scale );
+          // }
+
+				}
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>
