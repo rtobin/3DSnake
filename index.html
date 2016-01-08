@@ -46,6 +46,17 @@
         Use the "left"/"right" arrow keys to turn the snake. <br/>
         Press "spacebar" to begin and pause/unpause.
       </div>
+			<div class="score">
+				<img src="images/diamond.png" />
+				<input id="score-pts" type="text" value="0" readonly="true"/>
+			</div>
+			<div class="gameover">
+				<h1>Game Over!</h1>
+				<p>Press spacebar to play again</p>
+			</div>
+			<div id="game-window">
+			</div>
+
     <button id="reset-button">reset</button>
     </div>
 
@@ -58,7 +69,7 @@
       var sideLength = 15;
       var separation = 150;
 			var cubePtVolume = Math.pow(sideLength, 3);
-			var numSpheres = 0;
+			var numSpheres = 0, score = 0;
 			var spotIds = [];
 			var spheres = {};
 
@@ -129,13 +140,15 @@
   						sphere.position.x = xi * separation - offset,
   						sphere.position.y = yi * separation - offset,
   						sphere.position.z = zi * separation - offset;
-  						sphere.element.style.opacity = "0.3";
+  						sphere.element.style.opacity = "0.1";
 							sphere.spotId = i;
               scene.add( sphere );
 							spotIds.push(i);
 							numSpheres ++;
 
-              if ( sphere.position.x === 0 && sphere.position.y === 0 ) {
+							if (sphere.position.x === 0 &&
+	                sphere.position.y === 0 &&
+	                sphere.position.z > 0 ) {
                 selectedIndex = i;
                 selected = sphere;
                 selectedSpheres[sphere.spotId] = true;
@@ -168,7 +181,8 @@
 
 				}, false);
 
-				appleImg.src = 'images/apple.png';
+				// appleImg.src = 'images/apple.png';
+				appleImg.src = 'images/diamond.png';
 
         // window.addEventListener('keydown', onKeyDown, false );
 				//
@@ -177,7 +191,7 @@
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.domElement.style.position = 'absolute';
-				document.getElementById( 'container' ).appendChild( renderer.domElement );
+				document.getElementById( 'game-window' ).appendChild( renderer.domElement );
 
 				//
 
@@ -192,6 +206,7 @@
 
       function resetGame() {
         Object.keys(spheres).forEach( function(i) {
+					i = parseInt(i);
 					var sphere = spheres[i];
           if (sphere) {
             sphere.element.style.opacity = "0.3";
@@ -212,6 +227,9 @@
 				selectedSpheres = {};
         selectedSpheres[selected.spotId] = true;
 				placeApple();
+				score = 0;
+				$("#score-pts").val( score.toString() );
+				
       }
 
       function getUpCoordinate() {
@@ -254,7 +272,7 @@
       //   var vec = new THREE.Vector3();
       //   var upVec = UNIT_VECS[getUpCoordinate()];
       //   var sideNormalVec = UNIT_VECS[selectedSide];
-      
+
       //   switch (turningDir) {
       //     case 'left':
       //       vec.crossVectors ( sideNormalVec , upVec );
@@ -286,6 +304,7 @@
             break
           case 'pause':
             if (paused) {
+							$(".gameover")[0].style.display = "none";
               hoppingVec.copy(prevHoppingVec);
               paused = false;
             } else {
@@ -326,7 +345,7 @@
           selectedSide = 'nz';
         }
 
-        arr = hoppingVec.toArray()
+        arr = hoppingVec.toArray();
         // only one element of arr is nonzero
         selectedIndex += arr[0]; // x
         selectedIndex += arr[1] * sideLength;  // y
@@ -334,17 +353,29 @@
         return spheres[ selectedIndex ];
       }
 
+			function eatApple() {
+				score++;
+				$("#score-pts").val( score.toString() );
+				placeApple();
+			}
+
       function placeApple() {
+				if (applePosId) {
+					spheres[applePosId].element.style.display = "block";
+				}
         var idx;
 				do {
 					idx = Math.floor( Math.random() * numSpheres );
 					applePosId = spotIds[idx];
 				} while ( isSelectedSphere( applePosId ) );
 				apple.position.copy( spheres[applePosId].position );
+				spheres[applePosId].element.style.display = "none";
+
       }
 
-			function eatApple() {
-
+			function gameover() {
+				$(".gameover")[0].style.display = "block";
+				resetGame();
 			}
 
 			function isSelectedSphere(i) {
@@ -362,20 +393,34 @@
 
 				requestAnimationFrame( animate );
 
-        if (startCamPos) {
+        if (startCamPos ) {
           timeIter += clock.getDelta();
     			if ( timeIter > TIME_STEP ) {
             camera.position.lerpVectors( startCamPos, endCamPos, 1 );
             timeIter = 0;
             // selected.element.style.opacity = "0.3";
+
             selected = getNextSphere();
+
+						if ( selected &&
+							   isSelectedSphere(selected.spotId) &&
+								 Object.keys(selectedSpheres).length > 1 &&
+								!paused
+							) {
+							gameover();
+						}
+
+
             selected.element.style.opacity = "1";
             selectedSpheres[selected.spotId] = true;
             startCamPos = endCamPos;
             endCamPos = getEndCameraPosition(selected);
+
 						if ( isSelectedSphere(applePosId) ) {
-							placeApple();
+							eatApple();
 						}
+
+
           } else if (Object.keys(spheres).length > 0) {
             var alpha = timeIter / TIME_STEP;
             camera.position.lerpVectors( startCamPos, endCamPos, alpha );
