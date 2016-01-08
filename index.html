@@ -57,13 +57,15 @@
 
       var sideLength = 15;
       var separation = 150;
-			var numSpheres;
-			var positions = [];
-			var spheres = [];
+			var cubePtVolume = Math.pow(sideLength, 3);
+			var numSpheres = 0;
+			var spotIds = [];
+			var spheres = {};
 
       var timeIter = 0;
       var turningDir = null, startCamPos, endCamPos, turning = false;
-      var selected, selectedIndex, selectedSide, selectedSpheres = [];
+      var selected, selectedIndex, selectedSide, selectedSpheres = {};
+			var apple, applePosId;
 
       // switching to steer left/right vs direction arrows...
       var hoppingVec = new THREE.Vector3( 0,0,0 ),
@@ -106,12 +108,13 @@
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
 				scene = new THREE.Scene();
 
+				// spheres
 				var image = document.createElement( 'img' );
 				image.addEventListener( 'load', function ( event ) {
   				var offset = ( ( sideLength - 1 ) * separation ) / 2;
 
           // Cube
-					for ( var i = 0; i < Math.pow(sideLength, 3) ; i ++ ) {
+					for ( var i = 0; i < cubePtVolume ; i ++ ) {
             var xi = ( i % sideLength );
   					var yi = Math.floor( ( i / sideLength ) % sideLength );
   					var zi = Math.floor( i / ( sideLength * sideLength ) );
@@ -127,11 +130,15 @@
   						sphere.position.y = yi * separation - offset,
   						sphere.position.z = zi * separation - offset;
   						sphere.element.style.opacity = "0.3";
+							sphere.spotId = i;
               scene.add( sphere );
+							spotIds.push(i);
+							numSpheres ++;
+
               if ( sphere.position.x === 0 && sphere.position.y === 0 ) {
                 selectedIndex = i;
                 selected = sphere;
-                selectedSpheres.push(sphere);
+                selectedSpheres[sphere.spotId] = true;
                 selectedSide = 'z';
                 startCamPos = endCamPos = getEndCameraPosition(selected)
                 camera.position.copy(startCamPos);
@@ -140,15 +147,28 @@
   					} else {
               sphere = null;
             }
-  					spheres.push( sphere );
+  					spheres[i] = sphere;
 					}
 
+					// place apple after all spheres are laid out
 
-          numSpheres = spheres.length;
-					// transition();
+					placeApple();
 
 				}, false );
-				image.src = 'images/sprite.png';
+
+				// apple
+				var appleImg = document.createElement( 'img' );
+				appleImg.addEventListener( 'load', function ( event ) {
+
+					apple = new THREE.CSS3DSprite( appleImg.cloneNode() );
+					scene.add( apple );
+
+					image.src = 'images/sprite.png';
+
+
+				}, false);
+
+				appleImg.src = 'images/apple.png';
 
         // window.addEventListener('keydown', onKeyDown, false );
 				//
@@ -167,11 +187,12 @@
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
-        $("#reset-button").click(handleReset);
+        $("#reset-button").click(resetGame);
 			}
 
-      function handleReset() {
-        spheres.forEach( function(sphere, i) {
+      function resetGame() {
+        Object.keys(spheres).forEach( function(i) {
+					var sphere = spheres[i];
           if (sphere) {
             sphere.element.style.opacity = "0.3";
             if (sphere.position.x === 0 &&
@@ -188,7 +209,9 @@
         hoppingVec = new THREE.Vector3( 0,0,0 );
         prevHoppingVec = new THREE.Vector3( 0,1,0);
         paused = true;
-        selectedSpheres = [selected];
+				selectedSpheres = {};
+        selectedSpheres[selected.spotId] = true;
+				placeApple();
       }
 
       function getUpCoordinate() {
@@ -231,7 +254,7 @@
       //   var vec = new THREE.Vector3();
       //   var upVec = UNIT_VECS[getUpCoordinate()];
       //   var sideNormalVec = UNIT_VECS[selectedSide];
-      //   // debugger
+      
       //   switch (turningDir) {
       //     case 'left':
       //       vec.crossVectors ( sideNormalVec , upVec );
@@ -252,7 +275,6 @@
       // }
 
       function updateHoppingVec() {
-
         var sideNormalVec = new THREE.Vector3();
         sideNormalVec.copy(UNIT_VECS[selectedSide]);
         switch (turningDir) {
@@ -283,7 +305,7 @@
         var xi = ( selectedIndex % sideLength );
         var yi = Math.floor( ( selectedIndex / sideLength ) % sideLength );
         var zi = Math.floor( selectedIndex / ( sideLength * sideLength ) );
-        // debugger
+
         if ( xi + arr[0] >= sideLength ) {
           hoppingVec.copy(UNIT_VECS[selectedSide]).multiplyScalar(-1);
           selectedSide = 'x';
@@ -312,10 +334,22 @@
         return spheres[ selectedIndex ];
       }
 
-      function getNextObject() {
-        // sphereIndex = (sphereIndex + 1) % numSpheres;
-        // return spheres[ sphereIndex ];
+      function placeApple() {
+        var idx;
+				do {
+					idx = Math.floor( Math.random() * numSpheres );
+					applePosId = spotIds[idx];
+				} while ( isSelectedSphere( applePosId ) );
+				apple.position.copy( spheres[applePosId].position );
       }
+
+			function eatApple() {
+
+			}
+
+			function isSelectedSphere(i) {
+				return !!selectedSpheres[i];
+			}
 
       function getEndCameraPosition() {
         var vec = new THREE.Vector3()
@@ -336,17 +370,19 @@
             // selected.element.style.opacity = "0.3";
             selected = getNextSphere();
             selected.element.style.opacity = "1";
-            selectedSpheres.push(selected);
+            selectedSpheres[selected.spotId] = true;
             startCamPos = endCamPos;
             endCamPos = getEndCameraPosition(selected);
-          } else if (spheres.length > 0) {
+						if ( isSelectedSphere(applePosId) ) {
+							placeApple();
+						}
+          } else if (Object.keys(spheres).length > 0) {
             var alpha = timeIter / TIME_STEP;
             camera.position.lerpVectors( startCamPos, endCamPos, alpha );
           }
 
           var vec = new THREE.Vector3 ( 0, 0, 1 );
           vec.applyQuaternion(camera.quaternion);
-          // debugger
           if ( vec.y >= 1 ) {
             camera.up.set( 0, -1, 0 );
           } else if ( vec.y <= -1 ) {
