@@ -219,7 +219,7 @@
 					i = parseInt(i);
 					var sphere = spheres[i];
           if (sphere) {
-            sphere.element.style.opacity = "0.3";
+            sphere.element.style.opacity = "0.1";
             if (sphere.position.x === 0 &&
                 sphere.position.y === 0 &&
                 sphere.position.z > 0     ) {
@@ -239,8 +239,8 @@
 				placeApple();
 				score = 0;
 				$(".instructions").css("display", "block");
-
-
+				$(".play-pause").addClass("play");
+				
       }
 
       function getUpCoordinate() {
