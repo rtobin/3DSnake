@@ -43,13 +43,13 @@
 
     <div id="container">
       <div class="instructions">
-        Use the "left"/"right" arrow keys to turn the snake. <br/>
-        Press "spacebar" to begin and pause/unpause.
+
       </div>
 			<div class="score">
 				<img src="images/diamond.png" />
 				<input id="score-pts" type="text" value="0" readonly="true"/>
 			</div>
+
 			<div class="gameover">
 				<h1>Game Over!</h1>
 				<p>Press spacebar to play again</p>
@@ -57,8 +57,14 @@
 			<div id="game-window">
 			</div>
 
-    <button id="reset-button">reset</button>
-    </div>
+    	<a href="#" id="reset-button" class="btn btn-big">reset</a>
+			<div class="play-pause-container">
+				<div class="play-pause play"></div>
+			</div>
+			<div class="left-arrow-btn"></div>
+    	<div class="right-arrow-btn"></div>
+		</div>
+
 
 
 		<script>
@@ -187,6 +193,10 @@
         // window.addEventListener('keydown', onKeyDown, false );
 				//
         $(document).keydown(onKeyDown);
+				$(".play-pause-container").click( function() { turningDir = "pause"; });
+				$(".left-arrow-btn").click( function() { turningDir = "left"; });
+				$(".right-arrow-btn").click( function() { turningDir = "right"; });
+
 
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -228,8 +238,9 @@
         selectedSpheres[selected.spotId] = true;
 				placeApple();
 				score = 0;
-				$("#score-pts").val( score.toString() );
-				
+				$(".instructions").css("display", "block");
+
+
       }
 
       function getUpCoordinate() {
@@ -307,10 +318,16 @@
 							$(".gameover")[0].style.display = "none";
               hoppingVec.copy(prevHoppingVec);
               paused = false;
+							$(".instructions").css("display", "none");
+							$("#score-pts").val( score.toString() );
+							$(".play-pause").removeClass("play");
             } else {
               prevHoppingVec.copy(hoppingVec);
               hoppingVec.multiplyScalar(0);
               paused = true;
+							$(".instructions").css("display", "block");
+							$(".play-pause").addClass("play");
+
             }
             break
         }

@@ -2,11 +2,35 @@
   position: absolute;
 }
 
-#reset-button {
-  position: absolute;
-  bottom: 0;
-  margin: 20px;
-  z-index: 200;
+
+
+ /* --- reset Btn --- */
+
+.btn{
+  background: #428bca;
+  border: darkblue solid 1px;
+  border-radius: 3px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  padding: 4px 6px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 60px;
+  position: relative;
+  transition: color .1s ease;
+ /* top: 40em;*/
+}
+
+.btn:hover{
+  background: darkblue;
+}
+
+.btn-big{
+  font-size: 18px;
+  padding: 8px 10px;
+  min-width: 70px;
+  margin: 10px;
 }
 
 .instructions {
@@ -19,19 +43,77 @@
   border: 2px solid black;
   border-radius: 5px;
   margin: auto;
+  width: 450px;
+  position: absolute;
+  left: calc(50% - 225px);
+  background: aliceblue;
+  z-index: 500;
 }
+
+ /*--- Score --- */
 
 .score {
   position: absolute;
+  right: 0;
 }
 
 .score > input {
   border: 0;
   display: inline-block;
-  font-size: 20px;
+  font-size: 30px;
+  width: 25px;
+  margin: 10px;
 }
 
 .score > img {
   width: 50px;
   height: 50px;
+}
+
+/* --- Arrow controls ---*/
+.left-arrow-btn {
+  background-image: url("../images/arrow_left.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 128px;
+  width: 128px;
+  margin: 20px;
+}
+
+.right-arrow-btn {
+  background: url("../images/arrow_right.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 128px;
+  width: 128px;
+  margin: 20px;
+}
+
+ /*--- Play/pause --- */
+ .play-pause-container {
+   height: 60px;
+   width: 62px;
+   overflow-x: hidden;
+   display: inline-block;
+   position: absolute;
+   background: transparent;
+   right: 150px;
+ }
+
+ .play-pause {
+   background: url("../images/pause_play_stop.png");
+   background-repeat: no-repeat;
+   background-size: auto;
+   height: 100%;
+   width: 217px;
+ }
+
+.play-pause.play {
+  transform: translateX(-78px);
 }
