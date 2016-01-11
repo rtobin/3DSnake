@@ -23,6 +23,8 @@
   min-width: 60px;
   position: relative;
   transition: color .1s ease;
+  font-weight: 900;
+  
  /* top: 40em;*/
 }
 
@@ -60,6 +62,14 @@
 .score {
   position: absolute;
   right: 30px;
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  z-index: -1;
+  background-image: url("../images/diamond.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+
 }
 
 .score > input {
@@ -70,13 +80,13 @@
   margin: 10px;
   background: transparent;
   text-align: center;
+  width: 50px;
+  margin-top: 7px;
+  color: #3E80C3;
+  font-weight: 900;
 }
 
 .score > img {
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  z-index: -1;
 }
 
 /* --- Arrow controls ---*/
