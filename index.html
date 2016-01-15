@@ -68,7 +68,7 @@
 
 		<script>
 
-			var camera, scene, renderer;
+			var camera, scene, scene2, renderer, renderer2;
 			var controls;
 
       var sideLength = 15;
@@ -123,6 +123,31 @@
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
 				scene = new THREE.Scene();
+				scene2 = new THREE.Scene();
+
+				// wireframe grid
+				var side = (sideLength - 1) * separation;
+
+				var cubeGeometry = new THREE.BoxGeometry( side, side, side, sideLength, sideLength, sideLength );
+				var cubeMesh = new THREE.Mesh( cubeGeometry, new THREE.MeshBasicMaterial({
+					color: 0xf0f0f0,
+					opactity: 0.5
+				}) );
+				var helper = new THREE.EdgesHelper( cubeMesh, 0xc3c3c3 );
+				helper.material.linewidth = 2
+				scene2.add( cubeMesh );
+				scene2.add( helper );
+				// var geom = new THREE.PlaneGeometry( separation, separation );
+				// var mat = new THREE.MeshBasicMaterial( {
+				// 	color: 0xffff00,
+				// 	side: THREE.DoubleSide
+				// } );
+				//
+				// var plane = new THREE.Mesh( geom, mat );
+				// var planeEdges = new THREE.EdgesHelper( plane, 0x00ffff );
+				// planeEdges.material.linewidth = 2;
+				// planeEdges.position.z = side / 2;
+				// scene2.add( planeEdges );
 
 				// spheres
 				var image = document.createElement( 'img' );
@@ -189,6 +214,7 @@
 				// appleImg.src = 'images/apple.png';
 				appleImg.src = 'images/diamond.png';
 
+
         // window.addEventListener('keydown', onKeyDown, false );
 				//
         $(document).keydown(onKeyDown);
@@ -196,11 +222,16 @@
 				$(".left-arrow-btn").click( function() { turningDir = "left"; });
 				$(".right-arrow-btn").click( function() { turningDir = "right"; });
 
-
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.domElement.style.position = 'absolute';
 				document.getElementById( 'game-window' ).appendChild( renderer.domElement );
+
+				renderer2 = new THREE.WebGLRenderer();
+				renderer2.setClearColor( 0xffffff );
+				renderer2.setPixelRatio( window.devicePixelRatio );
+				renderer2.setSize( window.innerWidth, window.innerHeight );
+				document.getElementById( 'game-window' ).appendChild( renderer2.domElement );
 
 				//
 
@@ -275,6 +306,7 @@
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer2.setSize( window.innerWidth, window.innerHeight );
 
 			}
 
@@ -463,7 +495,7 @@
 				}
 
 				renderer.render( scene, camera );
-
+				renderer2.render( scene2, camera );
 			}
 
 		</script>
