@@ -3,35 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<title>three.js css3d - sprites</title>
-		<style>
-			html, body {
-				height: 100%;
-			}
+		<title>3DSnake</title>
 
-			body {
-				background-color: #ffffff;
-				margin: 0;
-				font-family: Arial;
-				overflow: hidden;
-			}
-
-			a {
-				color: #8888ff;
-			}
-
-			#info {
-				position: absolute;
-				width: 100%;
-				color: #000000;
-				padding: 5px;
-				font-family: Monospace;
-				font-size: 13px;
-				font-weight: bold;
-				text-align: center;
-				z-index: 1;
-			}
-		</style>
 	</head>
 	<body>
     <script src="js/jquery.min.js"></script>
@@ -50,8 +23,7 @@
 			</div>
 
 			<div class="gameover">
-				<h1>Game Over</h1>
-				<p>Thanks for playing!</p>
+
 			</div>
 			<div id="game-window">
 			</div>
@@ -79,7 +51,7 @@
 			var spheres = {};
 
       var timeIter = 0;
-      var turningDir = null, startCamPos, endCamPos, turning = false;
+      var turningDir = null, startQuaternion, endQuaternion, turning = false;
       var selected, selectedIndex, selectedSide, selectedSpheres = {};
 			var apple, applePosId;
 
@@ -131,7 +103,7 @@
 				var cubeGeometry = new THREE.BoxGeometry( side, side, side, sideLength, sideLength, sideLength );
 				var cubeMesh = new THREE.Mesh( cubeGeometry, new THREE.MeshBasicMaterial({
 					color: 0xf0f0f0,
-					opactity: 0.5
+					opacity: 0.5
 				}) );
 				var helper = new THREE.EdgesHelper( cubeMesh, 0xc3c3c3 );
 				helper.material.linewidth = 2
@@ -183,8 +155,8 @@
                 selected = sphere;
                 selectedSpheres[sphere.spotId] = true;
                 selectedSide = 'z';
-                startCamPos = endCamPos = getEndCameraPosition(selected)
-                camera.position.copy(startCamPos);
+                startQuaternion = endQuaternion = getEndQuaternion()
+                camera.position.copy(startQuaternion);
               }
 
   					} else {
@@ -222,9 +194,24 @@
 				$(".left-arrow-btn").click( function() { turningDir = "left"; });
 				$(".right-arrow-btn").click( function() { turningDir = "right"; });
 
+				//HTML
+		    element = document.createElement('div');
+		    element.innerHTML = 'Plain text inside a div.';
+		    element.className = 'three-div';
+
+		    //CSS Object
+		    div = new THREE.CSS3DObject(element);
+		    div.position.x = 0;
+		    div.position.y = 0;
+		    div.position.z = -185;
+		    div.rotation.y = Math.PI;
+		    scene.add(div);
+
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.domElement.style.position = 'absolute';
+    		renderer.domElement.style.top = 0;
+
 				document.getElementById( 'game-window' ).appendChild( renderer.domElement );
 
 				renderer2 = new THREE.WebGLRenderer();
@@ -256,8 +243,8 @@
               selectedIndex = i;
               selected = sphere;
               selectedSide = 'z';
-              startCamPos = endCamPos = getEndCameraPosition(selected)
-              camera.position.copy(startCamPos);
+              startQuaternion = endQuaternion = getEndQuaternion()
+              camera.position.copy( startQuaternion );
             }
           }
         } )
@@ -368,18 +355,18 @@
       function getNextSphere() {
         // var arr = getWorldDirArray();
         updateHoppingVec();
-        var arr = hoppingVec.toArray();
+        // var arr = hoppingVec.toArray();
         var xi = ( selectedIndex % sideLength );
         var yi = Math.floor( ( selectedIndex / sideLength ) % sideLength );
         var zi = Math.floor( selectedIndex / ( sideLength * sideLength ) );
 
-        if ( xi + arr[0] >= sideLength ) {
+        if ( xi + hoppingVec.x >= sideLength ) {
           hoppingVec.copy(UNIT_VECS[selectedSide]).multiplyScalar(-1);
           selectedSide = 'x';
-        } else if ( xi + arr[0] < 0 ) {
+        } else if ( xi + hoppingVec.x < 0 ) {
           hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
           selectedSide = 'nx';
-        } else if ( yi + arr[1] >= sideLength ) {
+        } else if ( yi + hoppingVec.x >= sideLength ) {
           hoppingVec.copy( UNIT_VECS[selectedSide]).multiplyScalar(-1);
           selectedSide = 'y';
         } else if ( yi + arr[1] < 0 ) {
@@ -430,21 +417,22 @@
 				return !!selectedSpheres[i];
 			}
 
-      function getEndCameraPosition() {
-        var vec = new THREE.Vector3()
-        vec.copy(selected.position)
-        vec.normalize();
-        return vec.multiplyScalar( CAMERA_DISTANCE );
-      }
+      function getEndQuaternion() {
+        // var vec = new THREE.Vector3();
+        // vec.copy(selected.position);
+        // vec.normalize();
+        // return vec.multiplyScalar( CAMERA_DISTANCE );
+
+			}
 
 			function animate() {
 
 				requestAnimationFrame( animate );
 
-        if (startCamPos ) {
+        if (startQuaternion ) {
           timeIter += clock.getDelta();
     			if ( timeIter > TIME_STEP ) {
-            camera.position.lerpVectors( startCamPos, endCamPos, 1 );
+            camera.position.lerpVectors( startQuaternion, endQuaternion, 1 );
             timeIter = 0;
             // selected.element.style.opacity = "0.3";
 
@@ -461,8 +449,8 @@
 
             selected.element.style.opacity = "1";
             selectedSpheres[selected.spotId] = true;
-            startCamPos = endCamPos;
-            endCamPos = getEndCameraPosition(selected);
+            startQuaternion = endQuaternion;
+            endQuaternion = getEndQuaternion();
 
 						if ( isSelectedSphere(applePosId) ) {
 							eatApple();
@@ -471,7 +459,7 @@
 
           } else if (Object.keys(spheres).length > 0) {
             var alpha = timeIter / TIME_STEP;
-            camera.position.lerpVectors( startCamPos, endCamPos, alpha );
+            camera.position.lerpVectors( startQuaternion, endQuaternion, alpha );
           }
 
           var vec = new THREE.Vector3 ( 0, 0, 1 );

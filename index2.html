@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>3DSnake</title>
+
+	</head>
+	<body>
+    <script src="vendor/jquery.min.js"></script>
+		<script src="vendor/three.min.js"></script>
+		<script src="vendor/tween.min.js"></script>
+		<script src="vendor/CSS3DRenderer.js"></script>
+
+		<script type="application/javascript" src="lib/util.js"></script>
+		<script type="application/javascript" src="lib/game.js"></script>
+		<script type="application/javascript" src="lib/map.js"></script>
+		<script type="application/javascript" src="lib/snake.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="./css/snake.css">
+
+    <div id="container">
+      <div class="instructions">
+
+      </div>
+			<div class="score">
+				<input id="score-pts" type="text" value="0" readonly="true"/>
+			</div>
+
+			<div class="gameover">
+				<h1>Game Over</h1>
+				<p>Thanks for playing!</p>
+			</div>
+			<div id="game-window">
+			</div>
+
+    	<a href="javascript:history.go(0)" id="reset-button" class="btn btn-big">reset</a>
+			<div class="play-pause-container">
+				<div class="play-pause play"></div>
+			</div>
+			<div class="left-arrow-btn"></div>
+    	<div class="right-arrow-btn"></div>
+		</div>
+
+
+
+		<script type="application/javascript">
+			(function () {
+				var game = new CUBOA.Game();
+				game.init();
+				game.animate();
+			})();
+
+
+		</script>
+	</body>
+</html>
