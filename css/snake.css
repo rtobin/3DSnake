@@ -13,6 +13,11 @@ a {
   color: #8888ff;
 }
 
+#game-window {
+  position: absolute;
+  top: 0px;
+}
+
 #info {
   position: absolute;
   width: 100%;
