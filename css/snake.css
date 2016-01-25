@@ -13,6 +13,10 @@ a {
   color: #8888ff;
 }
 
+ul {
+  list-style: none;
+}
+
 #game-window {
   position: absolute;
   top: 0px;
@@ -92,8 +96,13 @@ a {
  /*--- Score --- */
 
 .score {
-  position: absolute;
   right: 30px;
+  width: 200px;
+  position: absolute;
+}
+
+/*.score-icon {
+  position: relative;
   width: 50px;
   height: 50px;
   position: absolute;
@@ -101,25 +110,10 @@ a {
   background-image: url("../images/diamond.png");
   background-repeat: no-repeat;
   background-size: contain;
+}*/
 
-}
 
-.score > input {
-  border: 0;
-  display: inline-block;
-  font-size: 30px;
-  width: 25px;
-  /*margin: 10px;*/
-  background: transparent;
-  text-align: center;
-  width: 50px;
-  margin-top: 7px;
-  color: #3E80C3;
-  font-weight: 900;
-}
 
-.score > img {
-}
 
 /* --- Arrow controls ---*/
 .left-arrow-btn {
@@ -154,8 +148,8 @@ a {
   display: inline-block;
   position: absolute;
   background: transparent;
-  right: 20px;
-  top: 85px;
+  left: 200px;
+  top: 10px;
  }
 
  .play-pause {
