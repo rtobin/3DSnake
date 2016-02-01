@@ -31,6 +31,28 @@
 				<ul class="score-list"></ul>
 			</div>
 
+			<div class="setup-container">
+				<form id="setup" method="post" action="">
+					<h1>
+						3D SNAKE
+					</h1>
+					<div class="form-row">
+						<label for="player-select">PLAYER</label>
+			      <div class="player-select">
+			        <input type="radio" name="player" value="human" checked> HUMAN
+							<input type="radio" name="player" value="ai"> AI
+			      </div>
+					</div>
+		      <div class="form-row increment">
+		        <label for="enemies-count">ENEMIES</label>
+		        <input type="number" name="enemies-count" id="enemies-count" value="0" readonly>
+		      </div>
+		      <div class="buttons">
+		        <input type="submit" value="submit" id="submit">
+		      </div>
+		    </form>
+			</div>
+
 			<div class="gameover">
 				<h1>Game Over</h1>
 				<p>Thanks for playing!</p>
@@ -50,9 +72,51 @@
 
 		<script type="application/javascript">
 			(function () {
-				var game = new CUBOA.Game();
-				game.init();
-				game.animate();
+
+				$(".increment").append('<div class="dec button">-</div><div class="inc button">+</div>');
+
+			  $(".button").on("click", function() {
+
+			    var $button = $(this);
+			    var oldValue = $button.parent().find("input").val();
+
+			    if ($button.text() == "+") {
+						if (oldValue < 3) {
+				  	  var newVal = parseFloat(oldValue) + 1;
+				    } else {
+			        newVal = 3;
+			      }
+			  	} else {
+				   // Don't allow decrementing below zero
+			      if (oldValue > 0) {
+			        var newVal = parseFloat(oldValue) - 1;
+				    } else {
+			        newVal = 0;
+			      }
+				  }
+			    $button.parent().find("input").val(newVal);
+
+			  });
+
+				$("#setup").submit( function(e) {
+					e.preventDefault();
+					var numHumans = 0;
+
+					var numComputers = parseInt( $('input[name=enemies-count]').val() );
+					var player = $('input[name=player]:radio:checked').val();
+					if ( player === "human" ) {
+						numHumans ++;
+					} else {
+						numComputers ++;
+					}
+
+					$(this).parent().hide();
+
+					var game = new CUBOA.Game({ numHumans: numHumans, numComputers:numComputers });
+					game.init();
+					game.animate();
+				});
+
 			})();
 
 

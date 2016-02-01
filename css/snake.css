@@ -22,6 +22,75 @@ ul {
   top: 0px;
 }
 
+.setup-container {
+  z-index: 100;
+  position: absolute;
+  height: 100vh;
+  width: 100%;
+  top: 0;
+  background: #393939;
+  color: white;
+  font: 14px Helvetica, sans-serif;
+
+}
+
+#setup {
+  width: 500px;
+  margin: 100px auto;
+}
+
+label {
+  font: bold 20px Helvetica, sans-serif;
+  display: block;
+  float: left;
+  text-align: right;
+  padding: 5px 10px 0 0;
+  width: 140px;
+}
+
+input[type=number] {
+  float: left;
+  width: 40px;
+  font: bold 20px Helvetica, sans-serif;
+  padding: 3px 0 0 0;
+  text-align: center;
+}
+.form-row {
+  overflow: hidden;
+  margin: 10px 10px 5px 87px;
+}
+
+.button {
+  margin: 0 0 0 5px;
+  text-indent: -9999px;
+  cursor: pointer;
+  width: 29px;
+  height: 29px;
+  float: left;
+  text-align: center;
+  background: url(../images/buttons.png) no-repeat;
+}
+.dec {
+  background-position: 0 -29px;
+}
+
+.buttons {
+  padding: 20px 0 0 140px;
+  text-align: center;
+}
+
+#submit {
+  border-radius: 2px;
+
+}
+
+h1 {
+  font-size: 45px;
+  text-decoration: underline;
+  font-style: italic;
+  text-align: center;
+}
+
 #info {
   position: absolute;
   width: 100%;
@@ -36,6 +105,7 @@ ul {
 
 #container {
   height: 100%;
+  top: 0;
 }
 
 #instructions {
@@ -88,9 +158,15 @@ ul {
   width: 450px;
   position: absolute;
   left: calc(50% - 225px);
-  background: aliceblue;
+  background: white;
   z-index: 500;
   bottom: 50%;
+  overflow: hidden;
+}
+
+.gameover > h1 {
+  margin-top: 0;
+  background: lightsteelblue;
 }
 
  /*--- Score --- */
@@ -126,6 +202,7 @@ ul {
   height: 128px;
   width: 128px;
   margin: 20px;
+  display: none;
 }
 
 .right-arrow-btn {
@@ -138,6 +215,7 @@ ul {
   height: 128px;
   width: 128px;
   margin: 20px;
+  display: none;
 }
 
  /*--- Play/pause --- */
