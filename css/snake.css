@@ -31,12 +31,66 @@ ul {
   background: #393939;
   color: white;
   font: 14px Helvetica, sans-serif;
-
 }
 
 #setup {
   width: 500px;
   margin: 100px auto;
+}
+
+.instructions {
+  /*display: hidden;*/
+  display: block;
+  position: absolute;
+  margin: auto;
+  bottom: 0;
+  background: #393939;
+  color: white;
+  z-index: 101;
+  border-radius: 20px;
+}
+
+.instructions-setup {
+  width: 100%;
+}
+
+.instructions-visible {
+  padding: 22px;
+  /*width: 0;*/
+  height: 25%;
+  overflow: hidden;
+  text-align: center;
+  /*text-align: left;*/
+}
+
+.icon-hidden {
+  display: none;
+}
+
+.instructions-icon {
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+  float: left;
+  background: url(../images/i_icon.png) no-repeat;
+}
+
+.instructions-visible > h2 {
+  /*text-align: center;*/
+  text-decoration: underline;
+}
+
+.instructions-close {
+  position: absolute;
+  top: 0;
+  right: 15px;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  color: gray;
+}
+.instructions-close:hover {
+  color: black;
 }
 
 label {
@@ -143,10 +197,6 @@ h1 {
   top: 0px;
     position: absolute;
     left: 75px;
-}
-
-.instructions {
-  margin: 20px;
 }
 
 .gameover {

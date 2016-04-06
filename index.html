@@ -22,9 +22,6 @@
     <link rel="stylesheet" type="text/css" href="./css/snake.css">
 
     <div id="container">
-      <div class="instructions">
-      </div>
-
 			<div class="score">
 				<div class="score-icon">
 				</div>
@@ -32,10 +29,10 @@
 			</div>
 
 			<div class="setup-container">
+				<h1>
+					3D SNAKE
+				</h1>
 				<form id="setup" method="post" action="">
-					<h1>
-						3D SNAKE
-					</h1>
 					<div class="form-row">
 						<label for="player-select">PLAYER</label>
 			      <div class="player-select">
@@ -51,11 +48,13 @@
 		        <input type="submit" value="submit" id="submit">
 		      </div>
 		    </form>
+
 			</div>
 
 			<div class="gameover">
 				<h1>Game Over</h1>
 				<p>Thanks for playing!</p>
+				<a href="#">play again?</a>
 			</div>
 			<div id="game-window">
 			</div>
@@ -63,6 +62,16 @@
     	<a href="javascript:history.go(0)" id="reset-button" class="btn btn-big">reset</a>
 			<div class="play-pause-container">
 				<div class="play-pause play"></div>
+			</div>
+			<div class="instructions instructions-setup">
+				<div class="instructions-icon icon-hidden"></div>
+				<div class="instructions-visible">
+					<span class="instructions-close icon-hidden">&times;</span>
+					<h2>INSTRUCTIONS</h2>
+					<p>-Use left/right arrow keys to change direction. </p>
+					<p>-Spacebar to pause/start.</p>
+					<p>-Try to get as many apples while avoiding other snakes and black spheres!</p>
+				</div>
 			</div>
 			<div class="left-arrow-btn"></div>
     	<div class="right-arrow-btn"></div>
@@ -98,6 +107,24 @@
 
 			  });
 
+				$(".instructions-icon").click(function() {
+					$(".instructions-visible").animate({
+						opacity: "toggle",
+						height: "toggle",
+						width: "toggle",
+						padding: "toggle"
+					}, 200);
+				});
+
+				$(".instructions-close").click(function() {
+					$(".instructions-visible").animate({
+						opacity: "toggle",
+						height: "toggle",
+						width: "toggle",
+						padding: "toggle"
+					}, 200);
+				});
+
 				$("#setup").submit( function(e) {
 					e.preventDefault();
 					var numHumans = 0;
@@ -111,6 +138,9 @@
 					}
 
 					$(this).parent().hide();
+					$(".instructions").removeClass("instructions-setup");
+					$(".icon-hidden").removeClass("icon-hidden");
+					$(".instructions-icon").click();
 
 					var game = new CUBOA.Game({ numHumans: numHumans, numComputers:numComputers });
 					game.init();
